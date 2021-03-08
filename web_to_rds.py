@@ -1,12 +1,7 @@
 import json
-#import logging
-#import os
 import time
 import http.client
 from sql_database import SQLDatabase
-
-
-
 
 baseUrl = "/api/search-qf?searchkey=SEARCH_ID_JOB_FULLTIME&location="
 urlList = [
@@ -24,13 +19,14 @@ urlList = [
     "1.20001.22030"
     ]
 
-urlList = [
+urlList2 = [
     "0.20001"
     ]
 
 ts = time.gmtime()
 timestamp = time.strftime("%Y-%m-%d", ts)
 
+sql_all = ""
 db = SQLDatabase()
 
 for location in urlList:
@@ -58,7 +54,11 @@ for location in urlList:
 
     public_table = "public.occupation"
     columns = "category, amount, date, location"
-    values = "'%s', %s, '%s', '%s'" %('Alle yrker', total_ads, date, location)
+    values = "'%s', %s, '%s', '%s'" %('Aalle yrker', total_ads, date, location)
+    
+    sql = """INSERT INTO %s(%s)
+             VALUES(%s);""" %(public_table, columns, values)
+    sql_all += sql
     #db.insert_data(public_table, columns, values)
 
     for table_name, table in tables_dict.items():
@@ -70,8 +70,12 @@ for location in urlList:
             columns = "category, amount, date, location"
             values = "'%s', %s, '%s', '%s'" %(row['display_name'], row['hits'], date, location)
             #db.insert_data(public_table, columns, values)
-            print(values)
+            sql = """INSERT INTO %s(%s)
+                     VALUES(%s);""" %(public_table, columns, values)
+            sql_all += sql
+            #print(values)
 
+    db.insert_sql_data(sql_all)
 
 db.disconnect()
         
